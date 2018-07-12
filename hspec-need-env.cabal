@@ -4,8 +4,8 @@ author:                 Toshio Ito <debug.ito@gmail.com>
 maintainer:             Toshio Ito <debug.ito@gmail.com>
 license:                BSD3
 license-file:           LICENSE
--- synopsis:               
--- description:            
+synopsis:               Read environment variables for hspec tests
+description:            Read environment variables for hspec tests. See 'Test.Hspec.NeedEnv'.
 -- category:               
 cabal-version:          >= 1.10
 build-type:             Simple
