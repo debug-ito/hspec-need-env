@@ -42,8 +42,10 @@ test-suite spec
   -- default-extensions:   
   -- other-extensions:     
   other-modules:        Test.Hspec.NeedEnvSpec
-  build-depends:        base, hspec-need-env,
-                        hspec
+  build-depends:        base, hspec-need-env, hspec-core,
+                        hspec,
+                        setenv,
+                        transformers
 
 source-repository head
   type:                 git
