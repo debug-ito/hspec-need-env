@@ -14,11 +14,9 @@ import Test.Hspec.Expectations (expectationFailure)
 import Text.Read (readEither)
 
 -- | Return value of the specified environment variable. If that
--- environment variable is not set or it fails to parse the value, it
--- signals failure in hspec.
-needEnv :: Read a
-        => String -- ^ name of the environment variable
-        -> IO a -- ^ value of the environment variable
+-- environment variable is not set, it signals failure in hspec.
+needEnv :: String -- ^ name of the environment variable
+        -> IO String -- ^ value of the environment variable
 needEnv envkey = do
   mval <- lookupEnv envkey
   case mval of
@@ -32,7 +30,6 @@ failAndError :: String -> IO a
 failAndError msg = expectationFailure msg >> error msg
 
 -- | Like 'needEnv', but this functions signals \"pending\" in hsepc.
-wantEnv :: Read a
-        => String -- ^ name of the environment variable
-        -> IO a -- ^ value of the environment variable
+wantEnv :: String -- ^ name of the environment variable
+        -> IO String -- ^ value of the environment variable
 wantEnv = undefined
