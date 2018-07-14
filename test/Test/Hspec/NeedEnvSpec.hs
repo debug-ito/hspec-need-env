@@ -40,9 +40,10 @@ successCase :: (Read a, Show a, Eq a) => (String -> IO a) -> String -> a -> IO (
 successCase envGet envkey envval = do
   (conf, ref_results) <- configForTest
   got_summary <- hspecWithResult conf (before (envGet envkey) $ sampleSpec envval)
-  got_summary `shouldBe` Summary { summaryExamples = 1, summaryFailures = 0 }
   got <- readIORef ref_results
   map resultBody got `shouldBe` [ExampleSuccess]
+  got_summary `shouldBe` Summary { summaryExamples = 1, summaryFailures = 0 }
+  
 
 failCase :: (String -> IO a) -> String -> (String -> Bool) -> IO ()
 failCase envGet envkey andExpect = do
@@ -50,9 +51,9 @@ failCase envGet envkey andExpect = do
       expect _ = False
   (conf, ref_results) <- configForTest
   got_summary <- hspecWithResult conf (before (envGet envkey) sampleSuccess)
-  got_summary `shouldBe` Summary { summaryExamples = 1, summaryFailures = 1 }
   got <- fmap (map resultBody) $ readIORef ref_results
   got `shouldSatisfy` expect
+  got_summary `shouldBe` Summary { summaryExamples = 1, summaryFailures = 1 }
 
 
 sampleSpec :: (Eq a, Show a) => a -> SpecWith a

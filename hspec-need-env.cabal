@@ -21,7 +21,8 @@ library
   -- other-extensions:     
   exposed-modules:      Test.Hspec.NeedEnv
   -- other-modules:        
-  build-depends:        base
+  build-depends:        base >=4.6.0.0,
+                        hspec-expectations
 
 -- executable hspec-need-env
 --   default-language:     Haskell2010
