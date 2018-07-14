@@ -1,6 +1,7 @@
 module Test.Hspec.NeedEnvSpec (main, spec) where
 
 import Control.Monad.IO.Class (liftIO)
+import Data.List (isInfixOf)
 import Data.IORef (IORef, newIORef, modifyIORef, readIORef)
 import System.SetEnv (setEnv, unsetEnv)
 import Test.Hspec
@@ -19,22 +20,46 @@ spec = do
   describe "needEnv" $ do
     it "should get the specified env" $ do
       setEnv "HOGE" "hoge"
-      (conf, ref_results) <- configForTest
-      got_summary <- hspecWithResult conf (before (needEnv "HOGE") $ sampleSpec "hoge")
-      got_summary `shouldBe` Summary { summaryExamples = 1, summaryFailures = 1 }
-      got <- readIORef ref_results
-      map resultBody got `shouldBe` [ExampleSuccess]
-    it "should fail when the specified env is not present" $ True `shouldBe` False -- TODO
-    it "should fail when it fails to parse the env" $ True `shouldBe` False -- TODO
+      successCase needEnv "HOGE" "hoge"
+    it "should fail when the specified env is not present" $ do
+      let needEnvStr :: String -> IO String
+          needEnvStr = needEnv
+      unsetEnv "HOGE"
+      failCase needEnvStr "HOGE" (\msg -> "not set" `isInfixOf` msg)
+    it "should fail when it fails to parse the env" $ do
+      let needEnvInt :: String -> IO Int
+          needEnvInt = needEnv
+      setEnv "HOGE" "hoge"
+      failCase needEnvInt "HOGE" (\msg -> "parse" `isInfixOf` msg)
   describe "wantEnv" $ do
     it "should get the specified env" $ True `shouldBe` False -- TODO
     it "should make the test pending when the specified env is not present" $ True `shouldBe` False -- TODO
     it "should fail when it fails to parse the env" $ True `shouldBe` False -- TODO
 
+successCase :: (Read a, Show a, Eq a) => (String -> IO a) -> String -> a -> IO ()
+successCase envGet envkey envval = do
+  (conf, ref_results) <- configForTest
+  got_summary <- hspecWithResult conf (before (envGet envkey) $ sampleSpec envval)
+  got_summary `shouldBe` Summary { summaryExamples = 1, summaryFailures = 0 }
+  got <- readIORef ref_results
+  map resultBody got `shouldBe` [ExampleSuccess]
+
+failCase :: (String -> IO a) -> String -> (String -> Bool) -> IO ()
+failCase envGet envkey andExpect = do
+  let expect [ExampleFailure (Just msg)] = (envkey `isInfixOf` msg) && andExpect msg
+      expect _ = False
+  (conf, ref_results) <- configForTest
+  got_summary <- hspecWithResult conf (before (envGet envkey) sampleSuccess)
+  got_summary `shouldBe` Summary { summaryExamples = 1, summaryFailures = 1 }
+  got <- fmap (map resultBody) $ readIORef ref_results
+  got `shouldSatisfy` expect
+
 
 sampleSpec :: (Eq a, Show a) => a -> SpecWith a
 sampleSpec expected = specify "dummy" $ \got -> got `shouldBe` expected
 
+sampleSuccess :: SpecWith a
+sampleSuccess = specify "dummy" $ const (True `shouldBe` True)
 
 data ExampleResultBody = ExampleSuccess
                        | ExampleFailure (Maybe String)
@@ -67,6 +92,5 @@ configForTest = do
   let conf = defaultConfig { configIgnoreConfigFile = True,
                              configDryRun = False,
                              configFormatter = Just fmt
-                             -- configOutputFile =  -- should we set this to devnull??
                            }
   return (conf, ref_results)
