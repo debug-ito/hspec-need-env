@@ -4,8 +4,14 @@
 -- Maintainer: Toshio Ito <debug.ito@gmail.com>
 -- 
 module Test.Hspec.NeedEnv
-       ( needEnv,
-         wantEnv
+       ( -- * needEnv
+         needEnv,
+         needEnvParse,
+         needEnvRead,
+         -- * wantEnv
+         wantEnv,
+         wantEnvParse,
+         wantEnvRead
        ) where
 
 import Data.Monoid ((<>))
@@ -25,7 +31,31 @@ needEnv envkey = do
      return ""
    Just str -> return str
 
+-- | Get environment variable by 'needEnv', and parse the value.
+needEnvParse :: (String -> Either String a) -- ^ the parse of the environment variable
+             -> String -> IO a
+needEnvParse parseEnvVal envkey = do
+  val_str <- needEnv envkey
+  case parseEnvVal val_str of
+   Right val -> return val
+   Left e -> do
+     let error_msg = "Fail to parse environment variable " <> envkey <> ": " <> e
+     expectationFailure error_msg
+     error error_msg
+
+-- | Parse the environment variable with 'Read' class.
+needEnvRead :: (Read a) => String -> IO a
+needEnvRead = needEnvParse readEither
+
 -- | Like 'needEnv', but this functions signals \"pending\" in hsepc.
 wantEnv :: String -- ^ name of the environment variable
         -> IO String -- ^ value of the environment variable
 wantEnv = undefined
+
+-- | Get environment variable by 'wantEnv', and parse the value.
+wantEnvParse :: (String -> Either String a) -> String -> IO a
+wantEnvParse = undefined
+
+-- | Parse the environment variable with 'Read' class.
+wantEnvRead :: (Read a) => String -> IO a
+wantEnvRead = wantEnvParse readEither

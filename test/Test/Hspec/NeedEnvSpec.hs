@@ -10,7 +10,7 @@ import Test.Hspec.Core.Formatters (FailureReason(..), Formatter)
 import qualified Test.Hspec.Core.Formatters as F
 import Test.Hspec.Core.Util (Path)
 
-import Test.Hspec.NeedEnv (needEnv)
+import Test.Hspec.NeedEnv (needEnv, needEnvRead)
 
 main :: IO ()
 main = hspec spec
@@ -22,10 +22,17 @@ spec = do
       setEnv "HOGE" "hoge"
       successCase needEnv "HOGE" "hoge"
     it "should fail when the specified env is not present" $ do
-      let needEnvStr :: String -> IO String
-          needEnvStr = needEnv
       unsetEnv "HOGE"
-      failCase needEnvStr "HOGE" (\msg -> "not set" `isInfixOf` msg)
+      failCase needEnv "HOGE" (\msg -> "not set" `isInfixOf` msg)
+  describe "needEnvRead" $ do
+    it "should get and parse the specified env" $ do
+      setEnv "FOOBAR" "100"
+      successCase needEnvRead "FOOBAR" (100 :: Int)
+    it "should fail when it fails to parse" $ do
+      let needEnvInt :: String -> IO Int
+          needEnvInt = needEnvRead
+      setEnv "FOOBAR" "hoge"
+      failCase needEnvInt "FOOBAR" (\msg -> "parse" `isInfixOf` msg)
   describe "wantEnv" $ do
     it "should get the specified env" $ True `shouldBe` False -- TODO
     it "should make the test pending when the specified env is not present" $ True `shouldBe` False -- TODO
