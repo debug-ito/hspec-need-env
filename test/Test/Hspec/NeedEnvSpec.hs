@@ -10,30 +10,32 @@ import Test.Hspec.Core.Formatters (FailureReason(..), Formatter)
 import qualified Test.Hspec.Core.Formatters as F
 import Test.Hspec.Core.Util (Path)
 
-import Test.Hspec.NeedEnv (needEnv, needEnvRead)
+import Test.Hspec.NeedEnv
+  ( EnvMode(..), needEnv, needEnvRead
+  )
 
 main :: IO ()
 main = hspec spec
 
 spec :: Spec
 spec = do
-  describe "needEnv" $ do
+  describe "needEnv Need" $ do
     it "should get the specified env" $ do
       setEnv "HOGE" "hoge"
-      successCase needEnv "HOGE" "hoge"
+      successCase (needEnv Need) "HOGE" "hoge"
     it "should fail when the specified env is not present" $ do
       unsetEnv "HOGE"
-      failCase needEnv "HOGE" (\msg -> "not set" `isInfixOf` msg)
-  describe "needEnvRead" $ do
+      failCase (needEnv Need) "HOGE" (\msg -> "not set" `isInfixOf` msg)
+  describe "needEnvRead Need" $ do
     it "should get and parse the specified env" $ do
       setEnv "FOOBAR" "100"
-      successCase needEnvRead "FOOBAR" (100 :: Int)
+      successCase (needEnvRead Need) "FOOBAR" (100 :: Int)
     it "should fail when it fails to parse" $ do
       let needEnvInt :: String -> IO Int
-          needEnvInt = needEnvRead
+          needEnvInt = needEnvRead Need
       setEnv "FOOBAR" "hoge"
       failCase needEnvInt "FOOBAR" (\msg -> "parse" `isInfixOf` msg)
-  describe "wantEnv" $ do
+  describe "needEnv Want" $ do
     it "should get the specified env" $ True `shouldBe` False -- TODO
     it "should make the test pending when the specified env is not present" $ True `shouldBe` False -- TODO
     it "should fail when it fails to parse the env" $ True `shouldBe` False -- TODO

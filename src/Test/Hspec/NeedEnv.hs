@@ -4,14 +4,10 @@
 -- Maintainer: Toshio Ito <debug.ito@gmail.com>
 -- 
 module Test.Hspec.NeedEnv
-       ( -- * needEnv
+       ( EnvMode(..),
          needEnv,
          needEnvParse,
          needEnvRead,
-         -- * wantEnv
-         wantEnv,
-         wantEnvParse,
-         wantEnvRead
        ) where
 
 import Data.Monoid ((<>))
@@ -19,11 +15,20 @@ import System.Environment (lookupEnv)
 import Test.Hspec.Expectations (expectationFailure)
 import Text.Read (readEither)
 
--- | Return value of the specified environment variable. If that
--- environment variable is not set, it signals failure in hspec.
-needEnv :: String -- ^ name of the environment variable
+-- | How to treat missing environment variable.
+data EnvMode = Need
+               -- ^ If the environment variable is not set, the test
+               -- fails.
+             | Want
+               -- ^ If the environment variable is not set, the test
+               -- gets pending.
+             deriving (Show,Eq,Ord,Enum,Bounded)
+
+-- | Return value of the specified environment variable.
+needEnv :: EnvMode
+        -> String -- ^ name of the environment variable
         -> IO String -- ^ value of the environment variable
-needEnv envkey = do
+needEnv _ envkey = do
   mval <- lookupEnv envkey
   case mval of
    Nothing -> do
@@ -32,10 +37,12 @@ needEnv envkey = do
    Just str -> return str
 
 -- | Get environment variable by 'needEnv', and parse the value.
-needEnvParse :: (String -> Either String a) -- ^ the parse of the environment variable
-             -> String -> IO a
-needEnvParse parseEnvVal envkey = do
-  val_str <- needEnv envkey
+needEnvParse :: EnvMode
+             -> (String -> Either String a) -- ^ the parse of the environment variable
+             -> String
+             -> IO a
+needEnvParse mode parseEnvVal envkey = do
+  val_str <- needEnv mode envkey
   case parseEnvVal val_str of
    Right val -> return val
    Left e -> do
@@ -44,18 +51,6 @@ needEnvParse parseEnvVal envkey = do
      error error_msg
 
 -- | Parse the environment variable with 'Read' class.
-needEnvRead :: (Read a) => String -> IO a
-needEnvRead = needEnvParse readEither
-
--- | Like 'needEnv', but this functions signals \"pending\" in hsepc.
-wantEnv :: String -- ^ name of the environment variable
-        -> IO String -- ^ value of the environment variable
-wantEnv = undefined
-
--- | Get environment variable by 'wantEnv', and parse the value.
-wantEnvParse :: (String -> Either String a) -> String -> IO a
-wantEnvParse = undefined
-
--- | Parse the environment variable with 'Read' class.
-wantEnvRead :: (Read a) => String -> IO a
-wantEnvRead = wantEnvParse readEither
+needEnvRead :: (Read a)
+            => EnvMode -> String -> IO a
+needEnvRead mode = needEnvParse mode readEither
