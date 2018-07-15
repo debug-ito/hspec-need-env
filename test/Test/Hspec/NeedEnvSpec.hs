@@ -26,11 +26,6 @@ spec = do
           needEnvStr = needEnv
       unsetEnv "HOGE"
       failCase needEnvStr "HOGE" (\msg -> "not set" `isInfixOf` msg)
-    it "should fail when it fails to parse the env" $ do
-      let needEnvInt :: String -> IO Int
-          needEnvInt = needEnv
-      setEnv "HOGE" "hoge"
-      failCase needEnvInt "HOGE" (\msg -> "parse" `isInfixOf` msg)
   describe "wantEnv" $ do
     it "should get the specified env" $ True `shouldBe` False -- TODO
     it "should make the test pending when the specified env is not present" $ True `shouldBe` False -- TODO
