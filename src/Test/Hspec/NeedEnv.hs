@@ -4,12 +4,16 @@
 -- Maintainer: Toshio Ito <debug.ito@gmail.com>
 -- 
 module Test.Hspec.NeedEnv
-       ( EnvMode(..),
+       ( -- * Basics
+         EnvMode(..),
          needEnv,
          needEnvParse,
          needEnvRead,
+         -- * Utilities
+         needEnvHostPort
        ) where
 
+import Control.Applicative ((<$>), (<*>))
 import Data.Monoid ((<>))
 import System.Environment (lookupEnv)
 import Test.Hspec.Expectations (expectationFailure)
@@ -54,3 +58,16 @@ needEnvParse mode parseEnvVal envkey = do
 needEnvRead :: (Read a)
             => EnvMode -> String -> IO a
 needEnvRead mode = needEnvParse mode readEither
+
+-- | Get the pair of hostname and port number from environment
+-- variables.
+--
+-- It reads environment variables @(prefix ++ \"_HOST\")@ and
+-- @(prefix ++ \"_PORT\")@.
+needEnvHostPort :: EnvMode
+                -> String -- ^ prefix of environment variables
+                -> IO (String,Int)
+needEnvHostPort mode prefix = (,) <$> needStr "_HOST" <*> needInt "_PORT"
+  where
+    needStr suffix = needEnv mode (prefix ++ suffix)
+    needInt suffix = needEnvRead mode (prefix ++ suffix)
