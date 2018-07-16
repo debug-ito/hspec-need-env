@@ -36,9 +36,18 @@ spec = do
       setEnv "FOOBAR" "hoge"
       failCase needEnvInt "FOOBAR" (\msg -> "parse" `isInfixOf` msg)
   describe "needEnv Want" $ do
-    it "should get the specified env" $ True `shouldBe` False -- TODO
-    it "should make the test pending when the specified env is not present" $ True `shouldBe` False -- TODO
-    it "should fail when it fails to parse the env" $ True `shouldBe` False -- TODO
+    it "should get the specified env" $ do
+      setEnv "FOOBAR" "foo_bar"
+      successCase (needEnv Want) "FOOBAR" "foo_bar"
+    it "should make the test pending when the specified env is not present" $ do
+      unsetEnv "FOOBAR"
+      pendingCase (needEnv Want) "FOOBAR" (\msg -> "not set" `isInfixOf` msg)
+  describe "needEnvRead Want" $ do
+    it "should fail (even if it's Want) when it fails to parse the env" $ do
+      let needEnvInt :: String -> IO Int
+          needEnvInt = needEnvRead Want
+      setEnv "FOOBAR" "hoge"
+      failCase needEnvInt "FOOBAR" (\msg -> "parse" `isInfixOf` msg)
 
 successCase :: (Read a, Show a, Eq a) => (String -> IO a) -> String -> a -> IO ()
 successCase envGet envkey envval = do
@@ -47,18 +56,31 @@ successCase envGet envkey envval = do
   got <- readIORef ref_results
   map resultBody got `shouldBe` [ExampleSuccess]
   got_summary `shouldBe` Summary { summaryExamples = 1, summaryFailures = 0 }
-  
 
-failCase :: (String -> IO a) -> String -> (String -> Bool) -> IO ()
-failCase envGet envkey andExpect = do
-  let expect [ExampleFailure (Just msg)] = (envkey `isInfixOf` msg) && andExpect msg
+failOrPendingCase :: (ExampleResultBody -> Maybe String) -> (String -> IO a) -> String -> (String -> Bool) -> Int -> IO ()
+failOrPendingCase extractMsg envGet envkey andExpect exp_sum_failures = do
+  let expect [body] = case extractMsg body of
+        Nothing -> False
+        Just msg -> (envkey `isInfixOf` msg) && andExpect msg
       expect _ = False
   (conf, ref_results) <- configForTest
   got_summary <- hspecWithResult conf (before (envGet envkey) sampleSuccess)
   got <- fmap (map resultBody) $ readIORef ref_results
   got `shouldSatisfy` expect
-  got_summary `shouldBe` Summary { summaryExamples = 1, summaryFailures = 1 }
+  got_summary `shouldBe` Summary { summaryExamples = 1, summaryFailures = exp_sum_failures }
 
+
+failCase :: (String -> IO a) -> String -> (String -> Bool) -> IO ()
+failCase envGet envkey andExpect = failOrPendingCase extract envGet envkey andExpect 1
+  where
+    extract (ExampleFailure mmsg) = mmsg
+    extract _ = Nothing
+
+pendingCase :: (String -> IO a) -> String -> (String -> Bool) -> IO ()
+pendingCase envGet envkey andExpect = failOrPendingCase extract envGet envkey andExpect 0
+  where
+    extract (ExamplePending mmsg) = mmsg
+    extract _ = Nothing
 
 sampleSpec :: (Eq a, Show a) => a -> SpecWith a
 sampleSpec expected = specify "dummy" $ \got -> got `shouldBe` expected
