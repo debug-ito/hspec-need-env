@@ -16,6 +16,7 @@ module Test.Hspec.NeedEnv
 import Control.Applicative ((<$>), (<*>))
 import Data.Monoid ((<>))
 import System.Environment (lookupEnv)
+import Test.Hspec.Core.Spec (pendingWith)
 import Test.Hspec.Expectations (expectationFailure)
 import Text.Read (readEither)
 
@@ -32,13 +33,17 @@ data EnvMode = Need
 needEnv :: EnvMode
         -> String -- ^ name of the environment variable
         -> IO String -- ^ value of the environment variable
-needEnv _ envkey = do
+needEnv mode envkey = do
   mval <- lookupEnv envkey
   case mval of
    Nothing -> do
-     expectationFailure ("Environment variable " <> envkey <> " is not set.")
+     signalMsg ("Environment variable " <> envkey <> " is not set.")
      return ""
    Just str -> return str
+  where
+    signalMsg = case mode of
+      Need -> expectationFailure
+      Want -> pendingWith
 
 -- | Get environment variable by 'needEnv', and parse the value.
 needEnvParse :: EnvMode
