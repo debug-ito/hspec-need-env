@@ -43,7 +43,8 @@ test-suite spec
   main-is:              Spec.hs
   -- default-extensions:   
   -- other-extensions:     
-  other-modules:        Test.Hspec.NeedEnvSpec
+  other-modules:        Test.Hspec.NeedEnvSpec,
+                        Synopsis
   build-depends:        base, hspec-need-env, hspec-core,
                         hspec,
                         setenv,
