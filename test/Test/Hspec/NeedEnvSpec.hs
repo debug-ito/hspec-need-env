@@ -11,7 +11,7 @@ import qualified Test.Hspec.Core.Formatters as F
 import Test.Hspec.Core.Util (Path)
 
 import Test.Hspec.NeedEnv
-  ( EnvMode(..), needEnv, needEnvRead
+  ( EnvMode(..), needEnv, needEnvRead, needEnvHostPort
   )
 
 main :: IO ()
@@ -48,6 +48,18 @@ spec = do
           needEnvInt = needEnvRead Want
       setEnv "FOOBAR" "hoge"
       failCase needEnvInt "FOOBAR" (\msg -> "parse" `isInfixOf` msg)
+  describe "needEnvHostPort Need" $ do
+    it "should get host and port from environment variables the common name prefix" $ do
+      (conf, ref_results) <- configForTest
+      setEnv "PREFIX_HOGE_HOST" "192.168.17.223"
+      setEnv "PREFIX_HOGE_PORT" "1123"
+      got_summary <- hspecWithResult conf $ before (needEnvHostPort Need "PREFIX_HOGE") $ do
+        specify "dummny" $ \(host, port) -> do
+          host `shouldBe` "192.168.17.223"
+          port `shouldBe` 1123
+      got <- readIORef ref_results
+      map resultBody got `shouldBe` [ExampleSuccess]
+      got_summary `shouldBe` Summary { summaryExamples = 1, summaryFailures = 0 }
 
 successCase :: (Read a, Show a, Eq a) => (String -> IO a) -> String -> a -> IO ()
 successCase envGet envkey envval = do
