@@ -29,7 +29,9 @@ data EnvMode = Need
                -- gets pending.
              deriving (Show,Eq,Ord,Enum,Bounded)
 
--- | Return value of the specified environment variable.
+-- | Get value of the specified environment variable. If the
+-- environment variable is not set, it executes the action specified
+-- by the 'EnvMode'.
 needEnv :: EnvMode
         -> String -- ^ name of the environment variable
         -> IO String -- ^ value of the environment variable
@@ -45,9 +47,10 @@ needEnv mode envkey = do
       Need -> expectationFailure
       Want -> pendingWith
 
--- | Get environment variable by 'needEnv', and parse the value.
+-- | Get environment variable by 'needEnv', and parse the value. If it
+-- fails to parse, the test fails.
 needEnvParse :: EnvMode
-             -> (String -> Either String a) -- ^ the parse of the environment variable
+             -> (String -> Either String a) -- ^ the parser of the environment variable
              -> String
              -> IO a
 needEnvParse mode parseEnvVal envkey = do
