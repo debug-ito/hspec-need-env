@@ -42,7 +42,7 @@ test-suite spec
   ghc-options:          -Wall -fno-warn-unused-imports "-with-rtsopts=-M512m"
   main-is:              Spec.hs
   -- default-extensions:   
-  -- other-extensions:     
+  other-extensions:     CPP
   other-modules:        Test.Hspec.NeedEnvSpec,
                         Synopsis
   build-depends:        base, hspec-need-env, hspec-core,

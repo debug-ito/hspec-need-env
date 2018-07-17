@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 module Test.Hspec.NeedEnvSpec (main, spec) where
 
 import Control.Monad.IO.Class (liftIO)
@@ -118,11 +119,17 @@ formatterForTest :: IO (Formatter, IORef [ExampleResult])
 formatterForTest = do
   ref_results <- newIORef []
   let putRet r = liftIO $ modifyIORef ref_results (\rs -> rs ++ [r])
-      -- TODO: Fomatter internal changed between hspec 2.4 and 2.5
+#if MIN_VERSION_hspec_core(2,5,0)
+      f = F.silent { F.exampleSucceeded = \p _ -> putRet (p, ExampleSuccess),
+                     F.exampleFailed = \p _ fr -> putRet (p, ExampleFailure (failureReasonToString $ Right fr)),
+                     F.examplePending = \p _ ms -> putRet (p, ExamplePending ms)
+                   }
+#else
       f = F.silent { F.exampleSucceeded = \p -> putRet (p, ExampleSuccess),
                      F.exampleFailed = \p efr -> putRet (p, ExampleFailure (failureReasonToString efr)),
                      F.examplePending = \p ms -> putRet (p, ExamplePending ms)
                    }
+#endif
   return (f, ref_results)
 
 configForTest :: IO (Config, IORef [ExampleResult])
