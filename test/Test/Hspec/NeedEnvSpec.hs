@@ -7,7 +7,7 @@ import Data.IORef (IORef, newIORef, modifyIORef, readIORef)
 import System.SetEnv (setEnv, unsetEnv)
 import Test.Hspec
 import Test.Hspec.Core.Runner (hspecWithResult, Summary(..), Config(..), defaultConfig)
-import Test.Hspec.Core.Formatters (FailureReason(..), Formatter)
+import Test.Hspec.Core.Formatters (Formatter)
 import qualified Test.Hspec.Core.Formatters as F
 import Test.Hspec.Core.Util (Path)
 
@@ -111,9 +111,15 @@ type ExampleResult = (Path, ExampleResultBody)
 resultBody :: ExampleResult -> ExampleResultBody
 resultBody (_, b) = b
 
-failureReasonToString :: Either e FailureReason -> Maybe String
-failureReasonToString (Right (Reason s)) = Just s
+#if MIN_VERSION_hspec_core(2,4,0)
+failureReasonToString :: Either e F.FailureReason -> Maybe String
+failureReasonToString (Right (F.Reason s)) = Just s
 failureReasonToString _ = Nothing
+#else
+failureReasonToString :: Either e String -> Maybe String
+failureReasonToString (Right s) = Just s
+failureReasonToString _ = Nothing
+#endif
 
 formatterForTest :: IO (Formatter, IORef [ExampleResult])
 formatterForTest = do
@@ -135,7 +141,7 @@ formatterForTest = do
 configForTest :: IO (Config, IORef [ExampleResult])
 configForTest = do
   (fmt, ref_results) <- formatterForTest
-  let conf = defaultConfig { configIgnoreConfigFile = True,
+  let conf = defaultConfig { -- configIgnoreConfigFile = True, -- not in hspec-core-2.3.2
                              configDryRun = False,
                              configFormatter = Just fmt
                            }
