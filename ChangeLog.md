@@ -1,5 +1,10 @@
 # Revision history for hspec-need-env
 
+## 0.1.0.3  -- 2019-01-19
+
+* Confirm test with `hspec-core-2.7.0`
+
+
 ## 0.1.0.2  -- 2018-11-14
 
 * Confirm test with `hspec-core-2.6.0`
