@@ -1,5 +1,5 @@
 name:                   hspec-need-env
-version:                0.1.0.5
+version:                0.1.0.6
 author:                 Toshio Ito <debug.ito@gmail.com>
 maintainer:             Toshio Ito <debug.ito@gmail.com>
 license:                BSD3
@@ -21,7 +21,7 @@ library
   -- other-extensions:     
   exposed-modules:      Test.Hspec.NeedEnv
   -- other-modules:        
-  build-depends:        base >=4.6.0.0 && <4.15,
+  build-depends:        base >=4.6.0.0 && <4.16,
                         hspec-expectations >=0.7.2 && <0.9,
                         hspec-core >=2.2.4 && <2.8
 
@@ -45,6 +45,7 @@ test-suite spec
   other-extensions:     CPP
   other-modules:        Test.Hspec.NeedEnvSpec,
                         Synopsis
+  build-tool-depends:   hspec-discover:hspec-discover
   build-depends:        base, hspec-need-env, hspec-core,
                         hspec >=2.2.4,
                         setenv >=0.1.1.3 && <0.2,
