@@ -7,7 +7,7 @@ license-file:           LICENSE
 synopsis:               Read environment variables for hspec tests
 description:            Read environment variables for hspec tests. See 'Test.Hspec.NeedEnv'.
 category:               Test
-cabal-version:          >= 2.0
+cabal-version:          2.0
 build-type:             Simple
 extra-source-files:     README.md, ChangeLog.md
 homepage:               https://github.com/debug-ito/hspec-need-env
