@@ -7,7 +7,7 @@ license-file:           LICENSE
 synopsis:               Read environment variables for hspec tests
 description:            Read environment variables for hspec tests. See 'Test.Hspec.NeedEnv'.
 category:               Test
-cabal-version:          >= 1.10
+cabal-version:          >= 2.0
 build-type:             Simple
 extra-source-files:     README.md, ChangeLog.md
 homepage:               https://github.com/debug-ito/hspec-need-env
@@ -21,9 +21,9 @@ library
   -- other-extensions:     
   exposed-modules:      Test.Hspec.NeedEnv
   -- other-modules:        
-  build-depends:        base >=4.6.0.0 && <4.17,
-                        hspec-expectations >=0.7.2 && <0.9,
-                        hspec-core >=2.2.4 && <2.11
+  build-depends:        base,
+                        hspec-expectations,
+                        hspec-core
 
 -- executable hspec-need-env
 --   default-language:     Haskell2010
@@ -47,9 +47,9 @@ test-suite spec
                         Synopsis
   build-tool-depends:   hspec-discover:hspec-discover
   build-depends:        base, hspec-need-env, hspec-core,
-                        hspec >=2.2.4,
-                        setenv >=0.1.1.3 && <0.2,
-                        transformers >=0.5.2.0 && <0.6
+                        hspec,
+                        setenv,
+                        transformers
 
 source-repository head
   type:                 git
