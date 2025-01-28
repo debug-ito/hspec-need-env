@@ -1,5 +1,9 @@
 # Revision history for hspec-need-env
 
+## 0.1.0.12  -- 2025-01-28
+
+* Confirm test with ghc-9.12.1.
+
 ## 0.1.0.11  -- 2024-09-11
 
 * Set dependency version bounds by cabal-plan-bounds.
