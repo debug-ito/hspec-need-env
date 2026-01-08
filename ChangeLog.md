@@ -1,5 +1,9 @@
 # Revision history for hspec-need-env
 
+## 0.1.0.13  -- 2026-01-08
+
+* Confirm test with ghc-9.14.1.
+
 ## 0.1.0.12  -- 2025-01-28
 
 * Confirm test with ghc-9.12.1.
